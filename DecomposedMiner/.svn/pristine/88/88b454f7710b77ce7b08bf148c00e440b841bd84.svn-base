@@ -1,0 +1,58 @@
+package org.processmining.decomposedminer.configurations.impl;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.deckfour.xes.classification.XEventClass;
+import org.deckfour.xes.info.XLogInfo;
+import org.deckfour.xes.info.XLogInfoFactory;
+import org.deckfour.xes.model.XLog;
+import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
+import org.processmining.activityclusterarray.models.ActivityClusterArray;
+import org.processmining.activityclusterarray.models.impl.ActivityClusterArrayFactory;
+import org.processmining.decomposedminer.parameters.DecomposedDiscoveryParameters;
+import org.processmining.framework.plugin.PluginContext;
+import org.processmining.log.models.EventLogArray;
+import org.processmining.logdecomposer.filters.impl.DecompositionInFilter;
+import org.processmining.logdecomposer.parameters.DecomposeEventLogUsingActivityClusterArrayParameters;
+import org.processmining.logdecomposer.plugins.DecomposeEventLogUsingActivityClusterArrayPlugin;
+
+import com.fluxicon.slickerbox.components.NiceSlider;
+
+public class DecomposedNotDecomposedDiscoveryConfiguration extends DecomposedAbstractDiscoveryConfiguration {
+
+	public final static String NAME = "Do not decompose";
+	
+	public String getName() {
+		return NAME;
+	}
+
+	public void update(NiceSlider slider) {
+		slider.getSlider().setValue(0);
+		slider.setEnabled(false);
+	}
+
+	public AcceptingPetriNet apply(PluginContext context, XLog log, DecomposedDiscoveryParameters parameters,
+			ActivityClusterArray ignoredClusters) {
+		XLogInfo logInfo = XLogInfoFactory.createLogInfo(log, parameters.getClassifier());
+		Set<XEventClass> activities = new HashSet<XEventClass>(logInfo.getEventClasses().getClasses());
+		ActivityClusterArray clusters = ActivityClusterArrayFactory.createActivityClusterArray();
+		clusters.init(NAME, activities);
+		clusters.addCluster(activities);
+		parameters.setPercentage(0);
+		return super.apply(context, log, parameters, clusters);
+	}
+
+	public EventLogArray getLogs(PluginContext context, XLog log, ActivityClusterArray clusters,
+			DecomposedDiscoveryParameters parameters) {
+		DecomposeEventLogUsingActivityClusterArrayPlugin plugin = new DecomposeEventLogUsingActivityClusterArrayPlugin();
+		DecomposeEventLogUsingActivityClusterArrayParameters params = new DecomposeEventLogUsingActivityClusterArrayParameters(
+				log);
+		params.setClassifier(parameters.getClassifier());
+		params.setRemoveEmptyTraces(false);
+		params.setAddStartEndEvents(false);
+		params.setFilter(DecompositionInFilter.NAME);
+		params.setTryConnections(parameters.isTryConnections());
+		return plugin.run(context, log, clusters, params);
+	}
+}

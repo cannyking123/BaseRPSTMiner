@@ -1,0 +1,92 @@
+package org.processmining.decomposedminer.configurations;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.processmining.decomposedminer.configurations.impl.DecomposedClusteringDiscoveryConfiguration;
+import org.processmining.decomposedminer.configurations.impl.DecomposedClusteringFiftyDiscoveryConfiguration;
+import org.processmining.decomposedminer.configurations.impl.DecomposedClusteringHundredDiscoveryConfiguration;
+import org.processmining.decomposedminer.configurations.impl.DecomposedClusteringSeventyFiveDiscoveryConfiguration;
+import org.processmining.decomposedminer.configurations.impl.DecomposedNotDecomposedDiscoveryConfiguration;
+
+public class DecomposedDiscoveryConfigurationManager {
+
+	private static DecomposedDiscoveryConfigurationManager instance = null;
+	private List<DecomposedDiscoveryConfiguration> configurations;
+	private DecomposedDiscoveryConfiguration defaultConfiguration;
+	private boolean sorted;
+
+	private DecomposedDiscoveryConfigurationManager() {
+		configurations = new ArrayList<DecomposedDiscoveryConfiguration>();
+		defaultConfiguration = null;
+		sorted = false;
+//		register(new DecomposedMidiPosDiscoveryConfiguration(), false);
+//		register(new DecomposedMidiZeroDiscoveryConfiguration(), false);
+//		register(new DecomposedMidiNegDiscoveryConfiguration(), false);
+//		register(new DecomposedMidiOptDiscoveryConfiguration(), false);
+//		register(new DecomposedHeuristicsPosDiscoveryConfiguration(), false);
+//		register(new DecomposedHeuristicsZeroDiscoveryConfiguration(), false);
+//		register(new DecomposedHeuristicsNegDiscoveryConfiguration(), false);
+//		register(new DecomposedHeuristicsOptDiscoveryConfiguration(), false);
+//		register(new DecomposedFuzzyPosDiscoveryConfiguration(), false);
+//		register(new DecomposedFuzzyZeroDiscoveryConfiguration(), false);
+//		register(new DecomposedFuzzyNegDiscoveryConfiguration(), false);
+//		register(new DecomposedFuzzyOptDiscoveryConfiguration(), false);
+		register(new DecomposedClusteringDiscoveryConfiguration(), true);
+		register(new DecomposedClusteringHundredDiscoveryConfiguration(), false);
+		register(new DecomposedClusteringSeventyFiveDiscoveryConfiguration(), false);
+		register(new DecomposedClusteringFiftyDiscoveryConfiguration(), false);
+		register(new DecomposedNotDecomposedDiscoveryConfiguration(), false);
+//		register(new DecomposedDefaultDiscoveryConfiguration(), false);
+//		register(new DecomposedFilteredEightyZeroDiscoveryConfiguration(), false);
+//		register(new DecomposedMiniDiscoveryConfiguration(), false);
+//		register(new DecomposedFilteredEightyZeroNoStartEndDiscoveryConfiguration(), false);
+//		register(new DecomposedFilteredFiftyZeroNoStartEndDiscoveryConfiguration(), false);
+//		register(new DecomposedUnfilteredDiscoveryConfiguration(), false);
+//		register(new DecomposedUnfilteredNoStartEndDiscoveryConfiguration(), false);
+	}
+
+	public static DecomposedDiscoveryConfigurationManager getInstance() {
+		if (instance == null) {
+			instance = new DecomposedDiscoveryConfigurationManager();
+		}
+		return instance;
+	}
+	
+	public void register(DecomposedDiscoveryConfiguration Configuration, boolean isDefault) {
+		configurations.add(Configuration);
+		if (isDefault) {
+			defaultConfiguration = Configuration;
+		}
+		sorted = false;
+	}
+
+	public List<DecomposedDiscoveryConfiguration> getConfigurations() {
+		if (!sorted) {
+			Collections.sort(configurations, new Comparator<DecomposedDiscoveryConfiguration>() {
+				public int compare(DecomposedDiscoveryConfiguration m1, DecomposedDiscoveryConfiguration m2) {
+					return m1.getName().compareTo(m2.getName());
+				}
+			});
+			sorted = true;
+		}
+		return configurations;
+	}
+	
+	public boolean isDefault(DecomposedDiscoveryConfiguration Configuration) {
+		return Configuration == defaultConfiguration;
+	}
+	
+	public DecomposedDiscoveryConfiguration getConfiguration(String name) {
+		if (name != null) {
+			for (DecomposedDiscoveryConfiguration configuration : configurations) {
+				if (name.equals(configuration.getName())) {
+					return configuration;
+				}
+			}
+		}
+		return defaultConfiguration;
+	}
+}
